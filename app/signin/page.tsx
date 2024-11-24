@@ -1,13 +1,15 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { useRouter } from 'next/router';
+import { supabase } from '../../lib/supabaseClient';
+import { useRouter } from 'next/navigation';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [mode, setMode] = useState('signin'); // 'signin' or 'signup'
+  const [error, setError] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const router = useRouter();
 
   useEffect(() => {
@@ -20,7 +22,7 @@ export default function SignIn() {
     checkSession();
   }, [router]);
 
-  const handleAuth = async (e) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -77,7 +79,7 @@ export default function SignIn() {
           throw new Error('Failed to create account');
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Auth error:', error);
       setError({
         type: 'error',

@@ -1,15 +1,18 @@
+'use client';
+
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import { supabase } from '../../lib/supabaseClient';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { supabase } from '../../../lib/supabaseClient';
 
 export default function AuthCallback() {
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const [error, setError] = useState(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const handleAuth = async () => {
       try {
-        const { code } = router.query;
+        const code = searchParams.get('code');
         if (!code) return;
 
         const { data, error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
@@ -38,7 +41,7 @@ export default function AuthCallback() {
 
         // Successfully authenticated and got user data
         router.push('/dashboard');
-      } catch (err) {
+      } catch (err: any) {
         console.error('Authentication error:', err);
         setError(err.message);
         setTimeout(() => {
@@ -47,10 +50,8 @@ export default function AuthCallback() {
       }
     };
 
-    if (router.isReady) {
-      handleAuth();
-    }
-  }, [router.isReady, router.query]);
+    handleAuth();
+  }, [router, searchParams]);
 
   if (error) {
     return (
