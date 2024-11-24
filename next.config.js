@@ -11,8 +11,8 @@ const nextConfig = {
       },
     ]
   },
-  server: {
-    port: 8080
+  experimental: {
+    turbo: true
   }
 }
 
