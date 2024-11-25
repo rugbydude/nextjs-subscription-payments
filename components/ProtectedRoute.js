@@ -10,9 +10,14 @@ const ProtectedRoute = ({ children }) => {
     const checkAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('Session:', session); // Debugging line
         if (error) throw error;
         if (!session) {
+          console.log('No session, redirecting to /signin'); // Debugging line
           router.push('/signin');
+        } else {
+          console.log('Session found, redirecting to /dashboard'); // Debugging line
+          router.push('/dashboard'); // Redirect to dashboard if authenticated
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
@@ -25,8 +30,11 @@ const ProtectedRoute = ({ children }) => {
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('Auth state changed, session:', session); // Debugging line
       if (!session) {
         router.push('/signin');
+      } else {
+        router.push('/dashboard'); // Redirect to dashboard if authenticated
       }
     });
 

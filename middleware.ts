@@ -10,23 +10,17 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Auth condition for protected routes
-  if (!session && req.nextUrl.pathname !== '/signin') {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/signin';
-    return NextResponse.redirect(redirectUrl);
+  if (!session && req.nextUrl.pathname === '/dashboard') {
+    return NextResponse.redirect(new URL('/signin', req.url));
   }
 
-  // If user is signed in and tries to access signin page, redirect to dashboard
   if (session && req.nextUrl.pathname === '/signin') {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/dashboard';
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
   return res;
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/auth).*)'],
+  matcher: ['/dashboard', '/signin'],
 };

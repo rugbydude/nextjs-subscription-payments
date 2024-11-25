@@ -12,8 +12,14 @@ const nextConfig = {
     ]
   },
   experimental: {
-    turbo: true
+    turbo: {
+      enabled: true
+    }
+  },
+  productionBrowserSourceMaps: true, // Enable source maps in production
+  env: {
+    NEXT_PUBLIC_SITE_URL: 'http://localhost:3000'
   }
 }
 
-module.exports = nextConfig
+module.exports = nextConfig;
