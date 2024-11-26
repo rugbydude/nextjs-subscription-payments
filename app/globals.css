@@ -1,66 +1,45 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities;# install-tailwind.ps1
+@tailwind utilities;
 
-$ErrorActionPreference = "Stop"
-
-Write-Host "Setting up Tailwind CSS..." -ForegroundColor Cyan
-
-# Install required packages
-Write-Host "Installing dependencies..." -ForegroundColor Yellow
-pnpm add -D tailwindcss postcss autoprefixer
-
-# Create Tailwind config
-Write-Host "Creating Tailwind config..." -ForegroundColor Yellow
-npx tailwindcss init -p
-
-# Create/Update tailwind.config.js
-$tailwindConfig = @'
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
-'@
-Set-Content -Path "tailwind.config.js" -Value $tailwindConfig
-
-# Create/Update postcss.config.js
-$postcssConfig = @'
-module.exports = {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-}
-'@
-Set-Content -Path "postcss.config.js" -Value $postcssConfig
-
-# Create/Update .vscode/settings.json for CSS validation
-$vscodePath = ".\.vscode"
-if (-not (Test-Path $vscodePath)) {
-    New-Item -ItemType Directory -Force -Path $vscodePath
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
 }
 
-$vscodeSettings = @'
-{
-    "css.validate": false,
-    "tailwindCSS.includeLanguages": {
-        "javascript": "javascript",
-        "typescript": "typescript"
-    },
-    "editor.quickSuggestions": {
-        "strings": true
-    }
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
 }
-'@
-Set-Content -Path ".\.vscode\settings.json" -Value $vscodeSettings
 
-Write-Host "✓ Tailwind CSS setup complete" -ForegroundColor Green
-Write-Host "Please restart VS Code for the settings to take effect" -ForegroundColor Yellow
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(var(--background-end-rgb))
+  )
+  rgb(var(--background-start-rgb));
+}
+
+@layer base {
+  h1 {
+    @apply text-2xl font-bold;
+  }
+  h2 {
+    @apply text-xl font-semibold;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md transition-colors;
+  }
+  .btn-primary {
+    @apply bg-blue-500 text-white hover:bg-blue-600;
+  }
+}
