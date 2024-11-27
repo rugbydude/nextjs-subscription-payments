@@ -1,21 +1,20 @@
 // types/dashboard.ts
 export interface DashboardStats {
-  totalProjects: number
-  totalStories: number
-  totalEpics: number
-  completedStories: number
+  totalProjects: number;
+  totalEpics: number;
+  totalStories: number;
 }
 
-export interface RecentProject {
-  id: string
-  title: string
-  status: string
-  updatedAt: string
+export interface DashboardProject {
+  id: string;
+  title: string;
+  created_at: string;
+  status: string;
 }
 
-export interface RecentStory {
-  id: string
-  title: string
-  priority: string
-  epicTitle?: string
+export interface DashboardStory {
+  id: string;
+  title: string;
+  created_at: string;
+  priority: string;
 }

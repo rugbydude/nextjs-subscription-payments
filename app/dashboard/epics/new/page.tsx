@@ -18,17 +18,26 @@ const initialForm: CreateEpicDTO = {
 export default function CreateEpic() {
     const [form, setForm] = useState<CreateEpicDTO>(initialForm)
     const [loading, setLoading] = useState(false)
-    const [projects, setProjects] = useState<any[]>([])
+    const [projects, setProjects] = useState<Array<{ id: string; title: string }>>([])
     const router = useRouter()
     const supabase = createClientComponentClient()
 
     useEffect(() => {
         const fetchProjects = async () => {
-            const { data } = await supabase
-                .from("projects")
-                .select("*")
-            setProjects(data || [])
+            try {
+                const { data, error } = await supabase
+                    .from("projects")
+                    .select("id, title")
+                    .order("created_at", { ascending: false })
+
+                if (error) throw error
+                setProjects(data || [])
+            } catch (error) {
+                console.error("Error fetching projects:", error)
+                toast.error("Failed to load projects")
+            }
         }
+
         fetchProjects()
     }, [supabase])
 
@@ -37,17 +46,29 @@ export default function CreateEpic() {
         setLoading(true)
 
         try {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) {
+                toast.error("Please sign in")
+                router.push("/signin")
+                return
+            }
+
             const { error } = await supabase
                 .from("epics")
-                .insert([form])
+                .insert([{
+                    ...form,
+                    user_id: session.user.id
+                }])
+                .select()
+                .single()
 
             if (error) throw error
 
             toast.success("Epic created successfully!")
             router.push("/dashboard/epics")
-        } catch (error) {
-            console.error(error)
-            toast.error("Failed to create epic")
+        } catch (error: any) {
+            console.error("Error creating epic:", error)
+            toast.error(error.message || "Failed to create epic")
         } finally {
             setLoading(false)
         }
@@ -93,6 +114,40 @@ export default function CreateEpic() {
                         className="w-full p-2 border rounded"
                         rows={4}
                     />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Status</label>
+                        <select
+                            value={form.status}
+                            onChange={(e) => setForm(prev => ({ 
+                                ...prev, 
+                                status: e.target.value as CreateEpicDTO["status"]
+                            }))}
+                            className="w-full p-2 border rounded"
+                        >
+                            <option value="todo">Todo</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="done">Done</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Priority</label>
+                        <select
+                            value={form.priority}
+                            onChange={(e) => setForm(prev => ({ 
+                                ...prev, 
+                                priority: e.target.value as CreateEpicDTO["priority"]
+                            }))}
+                            className="w-full p-2 border rounded"
+                        >
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
                 </div>
 
                 <button
