@@ -3,68 +3,76 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
-export async function POST(request: Request) {
-  try {
+export async function GET() {
     const supabase = createRouteHandlerClient({ cookies })
-    
-    const { data: { session }, error: authError } = await supabase.auth.getSession()
-    if (authError) {
-      console.error("Authentication Error:", authError)
-      return NextResponse.json({ error: "Authentication error" }, { status: 401 })
-    }
+    const { data, error } = await supabase
+        .from("projects")
+        .select("*")
+        .order("created_at", { ascending: false })
+
+    if (error) return NextResponse.json({ error }, { status: 500 })
+    return NextResponse.json(data)
+}
+
+export async function POST(request: Request) {
+    const supabase = createRouteHandlerClient({ cookies })
+    const { data: { session } } = await supabase.auth.getSession()
 
     if (!session) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const body = await request.json()
-
     const { data, error } = await supabase
-      .from("projects")
-      .insert([{ ...body, user_id: session.user.id }])
-      .select()
-      .single()
+        .from("projects")
+        .insert([{ ...body, user_id: session.user.id }])
+        .select()
+        .single()
 
-    if (error) {
-      console.error("Supabase Insert Error:", error)
-      return NextResponse.json({ error: error.message }, { status: 400 })
-    }
-
+    if (error) return NextResponse.json({ error }, { status: 500 })
     return NextResponse.json(data)
-  } catch (error) {
-    console.error("Server Error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
-  }
 }
 
-export async function GET(request: Request) {
-  try {
+export async function PUT(request: Request) {
     const supabase = createRouteHandlerClient({ cookies })
-    
-    const { data: { session }, error: authError } = await supabase.auth.getSession()
-    if (authError) {
-      console.error("Authentication Error:", authError)
-      return NextResponse.json({ error: "Authentication error" }, { status: 401 })
-    }
+    const { data: { session } } = await supabase.auth.getSession()
 
     if (!session) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    const body = await request.json()
+    const { id, ...rest } = body
 
     const { data, error } = await supabase
-      .from("projects")
-      .select("*")
-      .eq("user_id", session.user.id)
-      .order("created_at", { ascending: false })
+        .from("projects")
+        .update(rest)
+        .eq("id", id)
+        .eq("user_id", session.user.id)
+        .select()
+        .single()
 
-    if (error) {
-      console.error("Supabase Fetch Error:", error)
-      return NextResponse.json({ error: error.message }, { status: 400 })
+    if (error) return NextResponse.json({ error }, { status: 500 })
+    return NextResponse.json(data)
+}
+
+export async function DELETE(request: Request) {
+    const supabase = createRouteHandlerClient({ cookies })
+    const { data: { session } } = await supabase.auth.getSession()
+
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    return NextResponse.json(data)
-  } catch (error) {
-    console.error("Server Error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
-  }
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
+
+    const { error } = await supabase
+        .from("projects")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", session.user.id)
+
+    if (error) return NextResponse.json({ error }, { status: 500 })
+    return NextResponse.json({ success: true })
 }

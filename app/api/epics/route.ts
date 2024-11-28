@@ -4,50 +4,31 @@ import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
 export async function GET() {
-    try {
-        const supabase = createRouteHandlerClient({ cookies })
-        
-        const { data, error } = await supabase
-            .from("epics")
-            .select("*")
-        
-        if (error) throw error
-        
-        return NextResponse.json(data)
-    } catch (error) {
-        return NextResponse.json(
-            { error: "Failed to fetch epics" },
-            { status: 500 }
-        )
-    }
+  const supabase = createRouteHandlerClient({ cookies })
+  const { data, error } = await supabase
+    .from("epics")
+    .select("*, projects(title)")
+    .order("created_at", { ascending: false })
+
+  if (error) return NextResponse.json({ error }, { status: 500 })
+  return NextResponse.json(data)
 }
 
 export async function POST(request: Request) {
-    try {
-        const supabase = createRouteHandlerClient({ cookies })
-        const { data: { session } } = await supabase.auth.getSession()
+  const supabase = createRouteHandlerClient({ cookies })
+  const { data: { session } } = await supabase.auth.getSession()
 
-        if (!session) {
-            return NextResponse.json(
-                { error: "Not authenticated" },
-                { status: 401 }
-            )
-        }
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
-        const body = await request.json()
-        const { data, error } = await supabase
-            .from("epics")
-            .insert([{ ...body, user_id: session.user.id }])
-            .select()
-            .single()
+  const body = await request.json()
+  const { data, error } = await supabase
+    .from("epics")
+    .insert([{ ...body, user_id: session.user.id }])
+    .select()
+    .single()
 
-        if (error) throw error
-
-        return NextResponse.json(data)
-    } catch (error) {
-        return NextResponse.json(
-            { error: "Failed to create epic" },
-            { status: 500 }
-        )
-    }
+  if (error) return NextResponse.json({ error }, { status: 500 })
+  return NextResponse.json(data)
 }
