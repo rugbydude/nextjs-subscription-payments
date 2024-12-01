@@ -1,4 +1,3 @@
-// types/dashboard.ts
 export interface DashboardStats {
   totalProjects: number;
   projectsTrend: number;
@@ -35,4 +34,4 @@ export interface TeamMember {
 
 export interface DashboardData {
   stats: DashboardStats;
-}
+} 

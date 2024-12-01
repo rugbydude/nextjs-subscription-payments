@@ -1,14 +1,21 @@
 // types/project.ts
+export interface TeamMember {
+    id: string;
+    name: string;
+    avatar: string;
+}
+
 export interface Project {
     id: string;
     title: string;
-    description?: string;
-    status: "active" | "on_hold" | "completed" | "archived";
-    priority: "low" | "medium" | "high" | "urgent";
+    description: string;
     progress: number;
-    start_date?: string;
-    end_date?: string;
-    metadata?: Record<string, any>;
+    totalTasks: number;
+    dueDate: string;
+    team: TeamMember[];
+    status: 'active' | 'completed' | 'on_hold';
+    created_at: string;
+    updated_at: string;
 }
 
 export type CreateProjectInput = Omit<Project, "id">;

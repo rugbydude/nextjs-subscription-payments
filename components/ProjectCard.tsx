@@ -1,43 +1,59 @@
 import Link from 'next/link';
-import type { Project } from '../types/project';
+import { CircularProgress } from '@/components/ui/CircularProgress';
+import { Project } from '@/types/project';
 
 interface ProjectCardProps {
   project: Project;
 }
 
-const ProjectCard = ({ project }: ProjectCardProps) => {
+export default function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div className="px-4 py-5 sm:px-6">
-        <h3 className="text-lg leading-6 font-medium text-gray-900">{project.name}</h3>
-        <p className="mt-1 max-w-2xl text-sm text-gray-500">{project.description}</p>
+    <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">{project.title}</h3>
+          <p className="mt-1 text-sm text-gray-500 line-clamp-2">{project.description}</p>
+        </div>
+        <CircularProgress value={project.progress} size={50} />
       </div>
-      <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-        <dl className="sm:divide-y sm:divide-gray-200">
-          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">Created at</dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              {new Date(project.created_at).toLocaleString()}
-            </dd>
-          </div>
-          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">Last updated</dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              {new Date(project.updated_at).toLocaleString()}
-            </dd>
-          </div>
-        </dl>
+      
+      <div className="mt-4 grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-sm text-gray-500">Tasks</p>
+          <p className="text-sm font-medium">{project.totalTasks} total</p>
+        </div>
+        <div>
+          <p className="text-sm text-gray-500">Due Date</p>
+          <p className="text-sm font-medium">
+            {new Date(project.dueDate).toLocaleDateString()}
+          </p>
+        </div>
       </div>
-      <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
+
+      <div className="mt-4 flex items-center justify-between">
+        <div className="flex -space-x-2">
+          {project.team.slice(0, 3).map((member) => (
+            <img
+              key={member.id}
+              src={member.avatar}
+              alt={member.name}
+              className="w-8 h-8 rounded-full border-2 border-white"
+            />
+          ))}
+          {project.team.length > 3 && (
+            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium">
+              +{project.team.length - 3}
+            </div>
+          )}
+        </div>
+        
         <Link
           href={`/projects/${project.id}`}
-          className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
         >
-          View Details
+          View Details →
         </Link>
       </div>
     </div>
   );
-};
-
-export default ProjectCard;
+}
